@@ -35,9 +35,14 @@
 
         </div>
         @endisset
-        <p>
+        <p style="white-space:pre-wrap;">
             {{$post->description}}
         </p>
+        <div class="my-3">
+            @foreach($post->photos as $photo)
+            <img src="{{asset('storage/'.$photo->name)}}" height="100" width="100" class="rounded" alt="">
+            @endforeach
+        </div>
         <hr>
     <div class="">
         <a href="{{route('post.create')}}" class="btn btn-primary mr-2">Create</a>

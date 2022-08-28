@@ -4,7 +4,7 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('home')}}">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Post</li>
+    <li class="breadcrumb-item active" aria-current="page">User</li>
   </ol>
 </nav>
 <div class="card">
@@ -14,17 +14,17 @@
     @endif
     
     <div class="d-flex justify-content-between align-items-center">
-      <h2>Post List</h2>
-      <a href="{{route('post.create')}}" class="text-primary pr-2"><i class="fa fa-2x fa-plus-circle"></i></a>
+      <h2>User List</h2>
+      <!-- <a href="{{route('post.create')}}" class="text-primary pr-2"><i class="fa fa-2x fa-plus-circle"></i></a> -->
     </div>
     <div class="d-flex justify-content-between">
       <div class="">
         @if(request('keyword'))
         Search by <span>{{request('keyword')}}</span>
-        <a href="{{route('post.index')}}" class="text-danger"><i class="bi bi-trash3"></i></a>
+        <a href="{{route('user.index')}}" class="text-danger"><i class="bi bi-trash3"></i></a>
         @endif
       </div>
-      <form action="{{route('post.index')}}" method="get" class="">
+      <form action="{{route('user.index')}}" method="get" class="">
         @csrf
         <div class="input-group">
         <input type="text" name="keyword" class="form-control">
@@ -38,65 +38,59 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Title</th>
-          <th>Category</th>
-          @if(!Auth::user()->isAuthor())
-          <th>Owner</th>
-          @endif
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
           <th>Control</th>
           <th>Created AT</th>
         </tr>
       </thead>
       
       <tbody>
-        @foreach($posts as $post)
+        @foreach($users as $user)
         <tr class="text-middle">
-          <td>{{$post->id}}</td>
+          <td>{{$user->id}}</td>
           <td class="w-25">
-            {{$post->title}}           
+            {{$user->name}}           
           </td>
           <td>
-            {{$post->category->title}}
+            {{$user->email}}
           </td>
-          @if(!Auth::user()->isAuthor())
           <td>
-            {{$post->user->name}}
+           
           </td>
-          @endif
           <td class="">
-          <a href="{{route('post.show',$post->id)}}" class="btn btn-outline-info btn-sm">
+          <a href="{{route('user.show',$user->id)}}" class="btn btn-outline-info btn-sm">
               <i class="bi bi-info-circle"></i>
             </a>
-            @can('delete',$post)
-            <form action="{{route('post.destroy',$post->id)}}" method="post" class="d-inline-block">
+            <form action="{{route('user.destroy',$user->id)}}" method="post" class="d-inline-block">
               @csrf
               @method('delete')
               <button class="btn btn-outline-danger btn-sm">
                 <i class="bi bi-trash"></i>
               </button>
             </form>
-            @endcan
-            @can('update',$post)
-            <a href="{{route('post.edit',$post->id)}}" class="btn btn-outline-warning btn-sm">
+            @can('update',$user)
+            <a href="{{route('user.edit',$user->id)}}" class="btn btn-outline-warning btn-sm">
               <i class="bi bi-pencil"></i>
             </a>
             @endcan
           </td>
           <td>
-            <p><i class="bi bi-calendar"></i>{{$post->created_at->format('d m Y')}}</p>
-            <p><i class="bi bi-alarm"></i>{{$post->created_at->format('g:m A')}}</p>
+            <p><i class="bi bi-calendar"></i>{{$user->created_at->format('d m Y')}}</p>
+            <p><i class="bi bi-alarm"></i>{{$user->created_at->format('g:m A')}}</p>
           </td>
         </tr>
         @endforeach
-        @if(empty($post))
+        @if(empty($user))
         <tr>
-          <td colspan="6">There is no post</td>
+          <td colspan="6">There is no user</td>
         </tr>
         @endif
       </tbody>
     </table>
     <div class="">
-      {{$posts->onEachSide(1)->links()}}
+      {{$users->onEachSide(1)->links()}}
     </div>
   </div>
 </div>

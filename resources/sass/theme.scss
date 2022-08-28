@@ -1,0 +1,11 @@
+.curosel-img{
+    object-fit: cover!important;
+    object-fit: contain;
+    height: 350px;
+}
+@import '_bswvariables.scss';
+$carousel-control-color: $primary;
+
+@import 'bootstrap/scss/bootstrap';
+@import "_bootswatch.scss";
+@import "../../node_modules/venobox/dist/venobox.css";

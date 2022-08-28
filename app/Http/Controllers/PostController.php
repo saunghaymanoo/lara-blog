@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Models\Photo;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -23,7 +26,9 @@ class PostController extends Controller
             $q -> orWhere('title',"like","%$keyword%")
                 ->orWhere('description','like',"%$keyword%");
         })
+        ->when(Auth::user()->role === 'author',fn($q)=>$q->where('user_id',Auth::id()))
         ->latest('id')
+        ->with(['category','user'])
         ->paginate(7)->withQueryString();
         return view('post.index', compact('posts'));
     }
@@ -46,6 +51,7 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
+        
         $post = new Post();
         $post->title = $request->title;
         $post->slug = Str::slug($request->title);
@@ -59,6 +65,19 @@ class PostController extends Controller
             $post->featured_image = $newN;
         }
         $post->save();
+
+        //save post photos
+        foreach($request->photos as $photo){
+            //save storage
+            $newN = uniqid()."_post-image_".$photo->extension();
+            $photo->storeAs("public",$newN);
+            
+            //save db
+            $photo = new Photo();
+            $photo->post_id = $post->id;
+            $photo->name = $newN;
+            $photo->save();
+        }
         return redirect()->route('post.index')->with('status', $request->title . 'is inserted successful');
     }
 
@@ -81,6 +100,7 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
+        Gate::authorize('update',$post);
         return view('post.edit', compact('post'));
     }
 
@@ -93,6 +113,9 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
+        if(Gate::denies('update',$post)){
+            return abort(403);
+        }
         $post->title = $request->title;
         $post->slug = Str::slug($request->title);
         $post->description = $request->description;
@@ -108,6 +131,19 @@ class PostController extends Controller
             $post->featured_image = $newN;
         }
         $post->update();
+
+        //save post photos
+        foreach($request->photos as $photo){
+            //save storage
+            $newN = uniqid()."_post-image_".$photo->extension();
+            $photo->storeAs("public",$newN);
+            
+            //save db
+            $photo = new Photo();
+            $photo->post_id = $post->id;
+            $photo->name = $newN;
+            $photo->save();
+        }
         return redirect()->route('post.index')->with('status', $request->title . 'is updated successful');
     }
 
@@ -119,8 +155,15 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        Gate::authorize('delete',$post);
         if(isset($post->featured_image)){
             Storage::delete('public/'.$post->featured_image);
+        }
+        foreach($post->photos as $photo){
+            
+            Storage::delete('public/'.$photo->name);
+            
+            $photo->delete();
         }
         $post->delete();
         return redirect()->route('post.index')->with('status',  'delete successful');

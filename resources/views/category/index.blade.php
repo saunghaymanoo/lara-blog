@@ -22,6 +22,8 @@
         <tr>
           <th>#</th>
           <th>Title</th>
+          <th>Owner</th>
+          <th>Posts Total</th>
           <th>Control</th>
           <th>Created AT</th>
         </tr>
@@ -34,7 +36,9 @@
             {{$c->title}}
             <div class="badget badge-dark">{{$c->slug}}</div>
           </td>
+          <td>{{$c->user->name}}</td>
           <td>
+            @can('delete',$c)
             <form action="{{route('category.destroy',$c->id)}}" method="post" class="d-inline-block">
               @csrf
               @method('delete')
@@ -42,11 +46,14 @@
                 <i class="bi bi-trash"></i>
               </button>
             </form>
-
+            @endcan
+            @can('update',$c)
             <a href="{{route('category.edit',$c->id)}}" class="btn btn-outline-warning btn-sm">
               <i class="bi bi-pencil"></i>
             </a>
+            @endcan
           </td>
+          <td>{{ $c->posts()->count() }}</td>
           <td>
             <p><i class="bi bi-calendar"></i>{{$c->created_at->format('d m Y')}}</p>
             <p><i class="bi bi-alarm"></i>{{$c->created_at->format('g:m A')}}</p>

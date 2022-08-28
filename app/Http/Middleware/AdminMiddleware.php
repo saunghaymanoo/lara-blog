@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class TestingMiddleware
+class AdminMiddleware
 {
     /**
      * Handle an incoming request.
@@ -17,8 +17,8 @@ class TestingMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if(Auth::id()!== 11){
-            return abort(404);
+        if(Auth::user()->role !== 'admin'){
+            return abort(403);
         }
         return $next($request);
     }
