@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-7">
             @isset($category)
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p>Filter By : {{ $category->title }}</p>
@@ -42,12 +42,13 @@
             <div class="card">
                 <div class="card-body">
                     <h1>There is no posts yet!</h1>
+                    <a href="{{ route('page.index') }}" class="btn  btn-outline-primary">See All</a>
                 </div>
             </div>
             @endforelse
 
         </div>
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-lg-5">
             <div class="">
                 <h2>Post Search</h2>
                 <form url="{{route('page.index') }}" class="my-4">

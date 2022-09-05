@@ -68,13 +68,30 @@
               <i class="bi bi-info-circle"></i>
             </a>
             @can('delete',$post)
-            <form action="{{route('post.destroy',$post->id)}}" method="post" class="d-inline-block">
-              @csrf
-              @method('delete')
-              <button class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-trash"></i>
-              </button>
-            </form>
+              @if(request()->trash)
+              <form action="{{route('post.destroy',[$post->id,'delete'=>'force'])}}" method="post" class="d-inline-block">
+                @csrf
+                @method('delete')
+                <button class="btn btn-outline-danger btn-sm">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+              <form action="{{route('post.destroy',[$post->id,'delete'=>'restore'])}}" method="post" class="d-inline-block">
+                @csrf
+                @method('delete')
+                <button class="btn btn-outline-danger btn-sm">
+                  <i class="bi bi-recycle"></i>
+                </button>
+              </form>
+              @else
+              <form action="{{route('post.destroy',[$post->id,'delete'=>'soft'])}}" method="post" class="d-inline-block">
+                @csrf
+                @method('delete')
+                <button class="btn btn-outline-danger btn-sm">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+              @endif
             @endcan
             @can('update',$post)
             <a href="{{route('post.edit',$post->id)}}" class="btn btn-outline-warning btn-sm">

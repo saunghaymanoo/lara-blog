@@ -11,6 +11,9 @@
     <a href="{{route('post.index')}}" class="list-group-item">Post List</a>
 </div>
 <div class="list-group">
+    <a href="{{route('post.index',['trash'=>true])}}" class="list-group-item">Deleted Post List</a>
+</div>
+<div class="list-group">
     <a href="{{route('post.create')}}" class="list-group-item">Create Post</a>
 </div>
 </div>

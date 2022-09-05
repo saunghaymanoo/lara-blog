@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-7">
             <div class="card my-4 p-2">
                 <div class="card-body">
                     <h2>{{$post->title}}</h2>
@@ -16,7 +16,8 @@
 
                     <hr>
                     <div class="mb-3">
-                        @isset($post->photos->count)
+                        
+                        @if($post->photos->count() > 0)
                         <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 @foreach($post->photos as $key=>$photo)
@@ -61,7 +62,7 @@
 
 
         </div>
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-lg-5">
             <div class="">
                 <h2>Post Search</h2>
                 <form url="{{route('page.index') }}" class="my-4">
@@ -85,7 +86,7 @@
 
                 </div>
             </div>
-            <div class="my-3">
+            <div class="mt-4">
                 <h2>Recent Posts</h2>
                 <div class="list-group">
                     @foreach($recentPosts as $post)

@@ -7,7 +7,9 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Photo;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -21,15 +23,11 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::when(request('keyword'),function($q){
-            $keyword = request('keyword');
-            $q -> orWhere('title',"like","%$keyword%")
-                ->orWhere('description','like',"%$keyword%");
-        })
-        ->when(Auth::user()->role === 'author',fn($q)=>$q->where('user_id',Auth::id()))
-        ->latest('id')
-        ->with(['category','user'])
-        ->paginate(7)->withQueryString();
+        $posts = Post::search()
+            ->when(request()->trash, fn ($q) => $q->onlyTrashed())
+            ->when(Auth::user()->role === 'author', fn ($q) => $q->where('user_id', Auth::id()))
+            ->latest('id')
+            ->paginate(7)->withQueryString();
         return view('post.index', compact('posts'));
     }
 
@@ -51,38 +49,43 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-        
-        $post = new Post();
-        $post->title = $request->title;
-        $post->slug = Str::slug($request->title);
-        $post->description = $request->description;
-        $post->excerpt = Str::words($request->description, 50);
-        $post->user_id = Auth::id();
-        $post->category_id = $request->category;
-        if ($request->hasFile('featured_image')) {
-            $newN = uniqid() . "-featured_image." . $request->file('featured_image')->getClientOriginalName();
-            $request->file('featured_image')->storeAs("public", $newN);
-            $post->featured_image = $newN;
+        try {
+            DB::beginTransaction();
+            $post = new Post();
+            $post->title = $request->title;
+            $post->slug = Str::slug($request->title);
+            $post->description = $request->description;
+            $post->excerpt = Str::words($request->description, 50);
+            $post->user_id = Auth::id();
+            $post->category_id = $request->category;
+            if ($request->hasFile('featured_image')) {
+                $newN = uniqid() . "-featured_image." . $request->file('featured_image')->getClientOriginalName();
+                $request->file('featured_image')->storeAs("public", $newN);
+                $post->featured_image = $newN;
+            }
+            $post->save();
+            $savePhotos = [];
+            //save post photos
+            foreach ($request->photos as $key => $photo) {
+                //save storage
+                $newN = uniqid() . "_post-image_" . $photo->extension();
+                $photo->storeAs("public", $newN);
+
+                //save db
+                $savePhotos[$key] = [
+                    "post_id" => $post->id,
+                    "name" => $newN
+                ];
+                // $photo = new Photo();
+                // $photo->post_id = $post->id;
+                // $photo->name = $newN;
+                // $photo->save();
+            }
+            Photo::insert($savePhotos);
+            DB::commit();
+        } catch (\Exception $err) {
+            DB::rollBack();
         }
-        $post->save();
-        $savePhotos = [];
-        //save post photos
-        foreach($request->photos as $key=>$photo){
-            //save storage
-            $newN = uniqid()."_post-image_".$photo->extension();
-            $photo->storeAs("public",$newN);
-            
-            //save db
-            $savePhotos[$key]=[
-                "post_id" => $post->id,
-                "name" => $newN
-            ];
-            // $photo = new Photo();
-            // $photo->post_id = $post->id;
-            // $photo->name = $newN;
-            // $photo->save();
-        }
-        Photo::insert($savePhotos);
         return redirect()->route('post.index')->with('status', $request->title . 'is inserted successful');
     }
 
@@ -94,7 +97,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        return view('post.show',compact('post'));
+        return view('post.show', compact('post'));
     }
 
     /**
@@ -105,7 +108,7 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        Gate::authorize('update',$post);
+        Gate::authorize('update', $post);
         return view('post.edit', compact('post'));
     }
 
@@ -118,7 +121,7 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
-        if(Gate::denies('update',$post)){
+        if (Gate::denies('update', $post)) {
             return abort(403);
         }
         $post->title = $request->title;
@@ -129,7 +132,7 @@ class PostController extends Controller
         $post->category_id = $request->category;
         if ($request->hasFile('featured_image')) {
             //delete old image
-            Storage::delete('public/'.$post->featured_image);
+            Storage::delete('public/' . $post->featured_image);
             //update
             $newN = uniqid() . "-featured_image." . $request->file('featured_image')->getClientOriginalName();
             $request->file('featured_image')->storeAs("public", $newN);
@@ -138,17 +141,17 @@ class PostController extends Controller
         $post->update();
 
         //save post photos
-            foreach($request->photos as $photo){
-                //save storage
-                $newN = uniqid()."_post-image_".$photo->extension();
-                $photo->storeAs("public",$newN);
-                
-                //save db
-                $photo = new Photo();
-                $photo->post_id = $post->id;
-                $photo->name = $newN;
-                $photo->save();
-            }
+        foreach ($request->photos as $photo) {
+            //save storage
+            $newN = uniqid() . "_post-image_" . $photo->extension();
+            $photo->storeAs("public", $newN);
+
+            //save db
+            $photo = new Photo();
+            $photo->post_id = $post->id;
+            $photo->name = $newN;
+            $photo->save();
+        }
         return redirect()->route('post.index')->with('status', $request->title . 'is updated successful');
     }
 
@@ -158,22 +161,31 @@ class PostController extends Controller
      * @param  \App\Models\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Post $post)
+    public function destroy($id)
     {
-        Gate::authorize('delete',$post);
-        if(isset($post->featured_image)){
-            Storage::delete('public/'.$post->featured_image);
-        }
-        // foreach($post->photos as $photo){
-            
-        //     Storage::delete('public/'.$photo->name);
-            
-        //     $photo->delete();
-        // }
-        Storage::destroy($post->photos->map(fn($photo)=>"public/".$photo->name)->toArray());
-        Photo::where('post_id',$post->id)->delete();
-        // $post->delete();
-        return redirect()->route('post.index')->with('status',  'delete successful');
+        $post = Post::withTrashed()->findOrFail($id);
+        Gate::authorize('delete', $post);
+        if (request('delete') === 'force') {
+            if (isset($post->featured_image)) {
+                Storage::delete('public/' . $post->featured_image);
+            }
 
+            // foreach ($post->photos as $photo) {
+
+            //     Storage::delete('public/' . $photo->name);
+
+            //     $photo->delete();
+            // }
+            Storage::delete($post->photos->map(fn($photo)=>"public/".$photo->name)->toArray());
+            Photo::where('post_id',$post->id)->delete();
+
+            Post::withTrashed()->findOrFail($id)->forceDelete();
+        } elseif (request('delete') === 'restore') {
+            Post::withTrashed()->findOrFail($id)->restore();
+        } else {
+            Post::withTrashed()->findOrFail($id)->delete();
+        }
+        // $post->delete();
+        return redirect()->route('post.index')->with('status',  request('delete') . ' delete successful');
     }
 }
