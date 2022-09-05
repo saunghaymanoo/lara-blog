@@ -65,19 +65,24 @@ class PostController extends Controller
             $post->featured_image = $newN;
         }
         $post->save();
-
+        $savePhotos = [];
         //save post photos
-        foreach($request->photos as $photo){
+        foreach($request->photos as $key=>$photo){
             //save storage
             $newN = uniqid()."_post-image_".$photo->extension();
             $photo->storeAs("public",$newN);
             
             //save db
-            $photo = new Photo();
-            $photo->post_id = $post->id;
-            $photo->name = $newN;
-            $photo->save();
+            $savePhotos[$key]=[
+                "post_id" => $post->id,
+                "name" => $newN
+            ];
+            // $photo = new Photo();
+            // $photo->post_id = $post->id;
+            // $photo->name = $newN;
+            // $photo->save();
         }
+        Photo::insert($savePhotos);
         return redirect()->route('post.index')->with('status', $request->title . 'is inserted successful');
     }
 
@@ -133,17 +138,17 @@ class PostController extends Controller
         $post->update();
 
         //save post photos
-        foreach($request->photos as $photo){
-            //save storage
-            $newN = uniqid()."_post-image_".$photo->extension();
-            $photo->storeAs("public",$newN);
-            
-            //save db
-            $photo = new Photo();
-            $photo->post_id = $post->id;
-            $photo->name = $newN;
-            $photo->save();
-        }
+            foreach($request->photos as $photo){
+                //save storage
+                $newN = uniqid()."_post-image_".$photo->extension();
+                $photo->storeAs("public",$newN);
+                
+                //save db
+                $photo = new Photo();
+                $photo->post_id = $post->id;
+                $photo->name = $newN;
+                $photo->save();
+            }
         return redirect()->route('post.index')->with('status', $request->title . 'is updated successful');
     }
 
@@ -159,13 +164,15 @@ class PostController extends Controller
         if(isset($post->featured_image)){
             Storage::delete('public/'.$post->featured_image);
         }
-        foreach($post->photos as $photo){
+        // foreach($post->photos as $photo){
             
-            Storage::delete('public/'.$photo->name);
+        //     Storage::delete('public/'.$photo->name);
             
-            $photo->delete();
-        }
-        $post->delete();
+        //     $photo->delete();
+        // }
+        Storage::destroy($post->photos->map(fn($photo)=>"public/".$photo->name)->toArray());
+        Photo::where('post_id',$post->id)->delete();
+        // $post->delete();
         return redirect()->route('post.index')->with('status',  'delete successful');
 
     }

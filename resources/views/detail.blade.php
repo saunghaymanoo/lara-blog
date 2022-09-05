@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-6">
+        <div class="col-12 col-lg-8">
             <div class="card my-4 p-2">
                 <div class="card-body">
                     <h2>{{$post->title}}</h2>
@@ -16,7 +16,7 @@
 
                     <hr>
                     <div class="mb-3">
-
+                        @isset($post->photos->count)
                         <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 @foreach($post->photos as $key=>$photo)
@@ -45,7 +45,7 @@
                                 <span class="visually-hidden">Next</span>
                             </button>
                         </div>
-
+                        @endisset
 
                     </div>
                     <p class="my-3" style="white-space:pre-wrap;">{{$post->description}}</p>
@@ -60,6 +60,44 @@
             </div>
 
 
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="">
+                <h2>Post Search</h2>
+                <form url="{{route('page.index') }}" class="my-4">
+                    <div class="input-group">
+                        <input type="text" name="keyword" class="form-control" value="{{request('keyword')}}">
+                        <button class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+            </div>
+            <div class="my-3">
+                <h2>Categories</h2>
+                <div class="list-group">
+                    @foreach($categories as $category)
+                    <a 
+                    class="list-group-item {{request()->url() === route('page.postbycategory',$category->slug) ? 'active' : ''}}" 
+                    href="{{route('page.postbycategory',$category->slug)}}"
+                    >
+                        {{$category->title}}
+                    </a>
+                    @endforeach
+
+                </div>
+            </div>
+            <div class="my-3">
+                <h2>Recent Posts</h2>
+                <div class="list-group">
+                    @foreach($recentPosts as $post)
+                    <a 
+                    class="list-group-item {{request()->url() === route('page.detail',$post->slug) ? 'active' : ''}}" 
+                    href="{{route('page.detail',$post->slug)}}"
+                    >
+                        {{$post->title}}
+                    </a>
+                    @endforeach
+                </div>
+            </div>
         </div>
     </div>
 </div>

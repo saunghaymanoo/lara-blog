@@ -35,7 +35,7 @@
       <div class="mb-3">
         <label for="category" class="form-label">Post Category</label>
         <select type="text" class="form-control @error('category') is-invalid @enderror" name="category" id="category" form="postUpdateForm">
-          @foreach(\App\Models\Category::all() as $c)
+          @foreach($categories as $c)
           <option 
           value="{{$c->id}}"
           {{$c->id == old('category',$post->category_id)?'selected':''}}
