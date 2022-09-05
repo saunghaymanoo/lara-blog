@@ -23,15 +23,15 @@
                                 @foreach($post->photos as $key=>$photo)
                                 @if($key==0)
                                 <div class="carousel-item active">
-                                    <a class="venobox curosel-img" data-gall="myGallery" href="{{asset('storage/'.$photo->name)}}">
-                                        <img src="{{asset('storage/'.$photo->name)}}" class="curosel-img" alt="">
+                                    <a class="venobox curosel-img" data-gall="myGallery" href="{{asset('storage/1000/'.$photo->name)}}">
+                                        <img src="{{asset('storage/500/'.$photo->name)}}" class="curosel-img" alt="">
                                     </a>
 
                                 </div>
                                 @else
                                 <div class="carousel-item">
-                                    <a class="venobox curosel-img" data-gall="myGallery" href="{{asset('storage/'.$photo->name)}}">
-                                        <img src="{{asset('storage/'.$photo->name)}}" class="curosel-img" alt="">
+                                    <a class="venobox curosel-img" data-gall="myGallery" href="{{asset('storage/1000/'.$photo->name)}}">
+                                        <img src="{{asset('storage/500/'.$photo->name)}}" class="curosel-img" alt="">
                                     </a>
                                 </div>
                                 @endif
@@ -55,7 +55,10 @@
                             <i class="bi bi-person"></i><small>{{$post->user->name}}</small><br>
                             <i class="bi bi-clock"></i><small>{{$post->created_at->diffforHumans()}}</small>
                         </div>
-                        <a href="{{route('page.index')}}" class="btn btn-primary">Post List</a>
+                        <div class="">    
+                            <a href="{{route('page.pdf',$post->slug)}}" class="btn btn-primary">Download PDF</a>
+                            <a href="{{route('page.index')}}" class="btn btn-primary">Post List</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,6 +66,12 @@
 
         </div>
         <div class="col-12 col-lg-5">
+            <div class="text-center border border-1 my-4 py-5">
+                <h2>Post QrCode</h2>
+                {{
+                    QrCode::size(200)->style('round')->generate(request()->url());
+                }}
+            </div>
             <div class="">
                 <h2>Post Search</h2>
                 <form url="{{route('page.index') }}" class="my-4">

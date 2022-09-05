@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 class PostController extends Controller
 {
@@ -67,9 +68,24 @@ class PostController extends Controller
             $savePhotos = [];
             //save post photos
             foreach ($request->photos as $key => $photo) {
+                $newN = uniqid() . "_post-image_" . $photo->getClientOriginalName();
+                $img = Image::make($photo);
+                   
+                //store 500
+                 $img->fit(500, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                Storage::makeDirectory('public/500');
+                $img->save("storage/500/$newN");
+
+                //store 1000
+                $img->resize(1000, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+                Storage::makeDirectory('public/1000');
+                $img->save("storage/1000/$newN");
                 //save storage
-                $newN = uniqid() . "_post-image_" . $photo->extension();
-                $photo->storeAs("public", $newN);
+                // $photo->storeAs("public", $newN);
 
                 //save db
                 $savePhotos[$key] = [
@@ -176,8 +192,8 @@ class PostController extends Controller
 
             //     $photo->delete();
             // }
-            Storage::delete($post->photos->map(fn($photo)=>"public/".$photo->name)->toArray());
-            Photo::where('post_id',$post->id)->delete();
+            Storage::delete($post->photos->map(fn ($photo) => "public/" . $photo->name)->toArray());
+            Photo::where('post_id', $post->id)->delete();
 
             Post::withTrashed()->findOrFail($id)->forceDelete();
         } elseif (request('delete') === 'restore') {

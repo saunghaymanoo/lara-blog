@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Barryvdh\DomPDF\Facade as PDF;
+
 
 class PageController extends Controller
 {
@@ -39,5 +42,11 @@ class PageController extends Controller
         ->withQueryString();
 
     return view('index',compact('posts','category'));
-}
+    }
+    public function pdfDownload($slug){
+        $post = Post::where('slug',$slug)->firstOrFail();
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML("<h1>$post->title</h1><div>$post->description</div>");
+        return $pdf->stream();
+    }
 }

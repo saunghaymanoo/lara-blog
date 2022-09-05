@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function(){
 Route::get('/',[PageController::class,'index'])->name('page.index');
 Route::get('/detail/{slug}',[PageController::class,'detail'])->name('page.detail');
 Route::get('/postbycategory/{category:slug}',[PageController::class,'postByCategory'])->name('page.postbycategory');
+Route::get('/pdf/{slug}',[PageController::class,'pdfDownload'])->name('page.pdf');
 
 
 

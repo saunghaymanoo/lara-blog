@@ -24,7 +24,7 @@
                     <hr>
                     <div class="my-2">
                         @forelse($post->photos as $photo)
-                            <img src="{{asset('storage/'.$photo->name)}}" width="100" height="100" class="rounded ms-2" alt="">
+                            <img src="{{asset('storage/500/'.$photo->name)}}" width="100" height="100" class="rounded ms-2" alt="">
                         @empty
                         @endforelse
                     </div>
