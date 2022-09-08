@@ -27,7 +27,7 @@
 
         <!-- Sidebar -->
         @auth
-        @include('layouts.sidebar')
+        @include('layouts.sidebar1')
         @endauth
         <!-- End of Sidebar -->
 
@@ -38,14 +38,17 @@
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow d-flex justify-content-between">
 
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+                   
 
-
+                    <div class="">
+                        <a href="{{route('page.index')}}" class="font-weight-bold m-2 text-decoration-none fs-2">Blog Posts</a>
+                    </div>
                     <!-- Topbar Navbar -->
 
                     <ul class="navbar-nav ms-auto">
@@ -63,8 +66,6 @@
                         </li>
                         @endif
                         @else
-                        
-
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -177,11 +178,8 @@
     <!-- Custom scripts for all pages-->
     <script src="{{asset('backend/js/sb-admin-2.min.js')}}"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-   
     @stack('script')
 
-   
 </body>
 
 </html>

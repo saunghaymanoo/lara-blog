@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app1')
 
 @section('content')
 <nav aria-label="breadcrumb">
@@ -17,7 +17,7 @@
       <h2>Post List</h2>
       <a href="{{route('post.create')}}" class="text-primary pr-2"><i class="fa fa-2x fa-plus-circle"></i></a>
     </div>
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between my-4">
       <div class="">
         @if(request('keyword'))
         Search by <span>{{request('keyword')}}</span>
